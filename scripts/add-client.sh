@@ -85,18 +85,35 @@ SUBNET_IP=$(grep "^Address = " "${AWG_CONFIG_DIR}/awg0.conf" | awk '{print $3}' 
 
 # Determine server endpoint
 if [ -z "$SERVER_ENDPOINT" ]; then
-    echo "[*] Auto-detecting server endpoint..."
-    SERVER_ENDPOINT=$(curl -s --max-time 5 ifconfig.me 2>/dev/null || curl -s --max-time 5 icanhazip.com 2>/dev/null || echo "")
+    echo
+    echo "Server endpoint not set. How would you like to proceed?"
+    echo "  1) Auto-detect from network interface (IPv4 only)"
+    echo "  2) Enter manually (IP or DNS name)"
+    echo
+    read -p "Choose [1/2]: " CHOICE
     
-    if [ -z "$SERVER_ENDPOINT" ]; then
-        echo
-        read -p "Enter server IP or DNS name: " SERVER_ENDPOINT
+    if [ "$CHOICE" = "1" ]; then
+        echo "[*] Auto-detecting IPv4 address from network interface..."
+        # Get IPv4 from primary interface (avoid IPv6)
+        SERVER_ENDPOINT=$(ip -4 addr show scope global | grep inet | head -1 | awk '{print $2}' | cut -d'/' -f1)
+        
         if [ -z "$SERVER_ENDPOINT" ]; then
-            echo -e "${RED}Error: Server endpoint required${NC}"
-            exit 1
+            echo -e "${YELLOW}    Could not detect IPv4 from interface${NC}"
+            read -p "Enter server IP or DNS name: " SERVER_ENDPOINT
+        else
+            echo "    Detected IPv4: $SERVER_ENDPOINT"
+            read -p "Use this address? [Y/n]: " CONFIRM
+            if [[ $CONFIRM =~ ^[Nn]$ ]]; then
+                read -p "Enter server IP or DNS name: " SERVER_ENDPOINT
+            fi
         fi
     else
-        echo "    ✓ Detected: $SERVER_ENDPOINT"
+        read -p "Enter server IP or DNS name: " SERVER_ENDPOINT
+    fi
+    
+    if [ -z "$SERVER_ENDPOINT" ]; then
+        echo -e "${RED}Error: Server endpoint required${NC}"
+        exit 1
     fi
 else
     echo "[*] Using endpoint: $SERVER_ENDPOINT"
@@ -186,9 +203,14 @@ echo "    ✓ Client config created"
 
 echo "[5/5] Generating QR code..."
 
-# Generate QR code using Format 6 (iOS compatible)
+# Parse config to extract all parameters for full JSON
+parse_config_value() {
+    grep "^$1 = " "${AWG_CONFIG_DIR}/clients/${CLIENT_NAME}.conf" | sed "s/^$1 = //"
+}
+
+# Generate QR code using Format 6 (iOS compatible) with FULL AWG config
 if command -v python3 &>/dev/null && command -v qrencode &>/dev/null; then
-    python3 - "${AWG_CONFIG_DIR}/clients/${CLIENT_NAME}.conf" "${SERVER_ENDPOINT}" "${AWG_PORT}" <<'PYTHON_SCRIPT'
+    python3 - "${AWG_CONFIG_DIR}/clients/${CLIENT_NAME}.conf" "${SERVER_ENDPOINT}" "${AWG_PORT}" "${CLIENT_PRIV_KEY}" "${CLIENT_IP}" "${SERVER_PUB_KEY}" "${PSK_KEY}" "${JC}" "${JMIN}" "${JMAX}" "${S1}" "${S2}" "${S3}" "${S4}" "${H1}" "${H2}" "${H3}" "${H4}" "${I1}" "${I2}" "${I3}" "${I4}" "${I5}" <<'PYTHON_SCRIPT'
 import sys
 import json
 import zlib
@@ -198,33 +220,74 @@ import subprocess
 config_file = sys.argv[1]
 server_ip = sys.argv[2]
 server_port = sys.argv[3]
+client_priv_key = sys.argv[4]
+client_ip = sys.argv[5]
+server_pub_key = sys.argv[6]
+psk_key = sys.argv[7]
+jc, jmin, jmax = sys.argv[8], sys.argv[9], sys.argv[10]
+s1, s2, s3, s4 = sys.argv[11], sys.argv[12], sys.argv[13], sys.argv[14]
+h1, h2, h3, h4 = sys.argv[15], sys.argv[16], sys.argv[17], sys.argv[18]
+i1, i2, i3, i4, i5 = sys.argv[19], sys.argv[20], sys.argv[21], sys.argv[22], sys.argv[23]
 
-# Read config text
+# Read full config text
 with open(config_file, 'r') as f:
     config_text = f.read()
 
-# Create minimal JSON structure
-compact_json = {
+# Create FULL AWG config JSON (all fields for v2 compatibility)
+full_awg_config = {
+    "config": config_text,
+    "hostName": server_ip,
+    "port": int(server_port),
+    "client_priv_key": client_priv_key,
+    "client_ip": client_ip,
+    "server_pub_key": server_pub_key,
+    "psk_key": psk_key,
+    "mtu": "1280",
+    "persistent_keep_alive": "25",
+    "allowed_ips": ["0.0.0.0/0", "::/0"],
+    
+    # AWG v2 obfuscation parameters
+    "junkPacketCount": jc,
+    "junkPacketMinSize": jmin,
+    "junkPacketMaxSize": jmax,
+    "initPacketJunkSize": s1,
+    "responsePacketJunkSize": s2,
+    "cookieReplyPacketJunkSize": s3,
+    "transportPacketJunkSize": s4,
+    "initPacketMagicHeader": h1,
+    "responsePacketMagicHeader": h2,
+    "underloadPacketMagicHeader": h3,
+    "transportPacketMagicHeader": h4,
+    
+    # Signature packets (I1-I5)
+    "specialJunk1": i1,
+    "specialJunk2": i2,
+    "specialJunk3": i3,
+    "specialJunk4": i4,
+    "specialJunk5": i5,
+}
+
+# Create server config structure
+server_config = {
     "containers": [{
         "container": "amnezia-awg",
-        "awg": {
-            "config": config_text,
-            "hostName": server_ip,
-            "port": int(server_port)
-        }
+        "awg": full_awg_config
     }],
     "defaultContainer": "amnezia-awg",
+    "description": "AmneziaWG",
+    "dns1": "1.1.1.1",
+    "dns2": "1.0.0.1",
     "hostName": server_ip
 }
 
-# Convert to JSON
-json_data = json.dumps(compact_json, separators=(',', ':')).encode('utf-8')
+# Convert to JSON (compact)
+json_data = json.dumps(server_config, separators=(',', ':')).encode('utf-8')
 
 # Compress with Qt header (4-byte size + zlib)
 compressed = zlib.compress(json_data, 8)
 qt_compressed = len(json_data).to_bytes(4, 'big') + compressed
 
-# Base64 encode (URL-safe, no padding) - NO vpn:// prefix!
+# Base64 encode (URL-safe, no padding, NO vpn:// prefix!)
 b64_data = base64.urlsafe_b64encode(qt_compressed).decode('ascii').rstrip('=')
 
 # Display QR in terminal
@@ -263,17 +326,17 @@ if [ -f "${AWG_CONFIG_DIR}/clients/${CLIENT_NAME}-qr.png" ]; then
     echo "  QR Code: ${AWG_CONFIG_DIR}/clients/${CLIENT_NAME}-qr.png"
 fi
 echo
-echo -e "${YELLOW}Import to AmneziaVPN app:${NC}"
-echo "  ${GREEN}Option 1 (QR Code - iOS):${NC}"
+echo "Import to AmneziaVPN app:"
+echo "  Option 1 (QR Code - iOS/Android):"
 echo "    • Scan the QR code above or open the PNG file"
 echo "    • AmneziaVPN app will import automatically"
 echo
-echo "  ${GREEN}Option 2 (File Import - All platforms):${NC}"
+echo "  Option 2 (File Import - All platforms):"
 echo "    1. Copy config to your device:"
 echo "       scp root@server:${AWG_CONFIG_DIR}/clients/${CLIENT_NAME}.conf ."
 echo "    2. AmneziaVPN app → Settings → Import from file"
 echo
-echo -e "${GREEN}Verify connection:${NC}"
+echo "Verify connection:"
 echo "  docker exec ${CONTAINER_NAME} awg show awg0"
 echo "  (Should show endpoint + handshake after client connects)"
 echo
