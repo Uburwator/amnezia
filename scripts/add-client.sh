@@ -1,7 +1,7 @@
 #!/bin/bash
 # AmneziaWG Add Client Script
 # Adds new VPN clients with hot reload (no container restart)
-# Generates working QR codes (Format 6 - iOS compatible)
+# Generates working QR codes (Format 6 - iOS compatible, AWG v2)
 
 set -e
 
@@ -203,12 +203,7 @@ echo "    ✓ Client config created"
 
 echo "[5/5] Generating QR code..."
 
-# Parse config to extract all parameters for full JSON
-parse_config_value() {
-    grep "^$1 = " "${AWG_CONFIG_DIR}/clients/${CLIENT_NAME}.conf" | sed "s/^$1 = //"
-}
-
-# Generate QR code using Format 6 (iOS compatible) with FULL AWG config
+# Generate QR code using Format 6 (iOS compatible) with AWG v2
 if command -v python3 &>/dev/null && command -v qrencode &>/dev/null; then
     python3 - "${AWG_CONFIG_DIR}/clients/${CLIENT_NAME}.conf" "${SERVER_ENDPOINT}" "${AWG_PORT}" "${CLIENT_PRIV_KEY}" "${CLIENT_IP}" "${SERVER_PUB_KEY}" "${PSK_KEY}" "${JC}" "${JMIN}" "${JMAX}" "${S1}" "${S2}" "${S3}" "${S4}" "${H1}" "${H2}" "${H3}" "${H4}" "${I1}" "${I2}" "${I3}" "${I4}" "${I5}" <<'PYTHON_SCRIPT'
 import sys
@@ -233,7 +228,7 @@ i1, i2, i3, i4, i5 = sys.argv[19], sys.argv[20], sys.argv[21], sys.argv[22], sys
 with open(config_file, 'r') as f:
     config_text = f.read()
 
-# Create FULL AWG config JSON (all fields for v2 compatibility)
+# Create FULL AWG v2 config JSON
 full_awg_config = {
     "config": config_text,
     "hostName": server_ip,
@@ -246,7 +241,7 @@ full_awg_config = {
     "persistent_keep_alive": "25",
     "allowed_ips": ["0.0.0.0/0", "::/0"],
     
-    # AWG v2 obfuscation parameters
+    # AWG obfuscation parameters
     "junkPacketCount": jc,
     "junkPacketMinSize": jmin,
     "junkPacketMaxSize": jmax,
@@ -267,13 +262,13 @@ full_awg_config = {
     "specialJunk5": i5,
 }
 
-# Create server config structure
+# CRITICAL: Use "amnezia-awg2" for v2 container type!
 server_config = {
     "containers": [{
-        "container": "amnezia-awg",
+        "container": "amnezia-awg2",  # v2 not v1!
         "awg": full_awg_config
     }],
-    "defaultContainer": "amnezia-awg",
+    "defaultContainer": "amnezia-awg2",  # v2 not v1!
     "description": "AmneziaWG",
     "dns1": "1.1.1.1",
     "dns2": "1.0.0.1",
@@ -299,7 +294,8 @@ try:
     qr_png = config_file.replace('.conf', '-qr.png')
     subprocess.run(['qrencode', '-t', 'PNG', '-o', qr_png, '-s', '8', b64_data], check=True)
     print(f"\n    ✓ QR code saved: {qr_png}")
-    print(f"      Size: {len(b64_data)} bytes (Format 6 - iOS compatible)")
+    print(f"      Format: AWG v2 (Format 6 - iOS compatible)")
+    print(f"      Size: {len(b64_data)} bytes")
     
 except Exception as e:
     print(f"    ✗ QR generation failed: {e}")
@@ -316,7 +312,7 @@ else
 fi
 
 echo
-echo -e "${GREEN}=== Client Added Successfully! ===${NC}"
+echo "=== Client Added Successfully! ==="
 echo
 echo "Client: ${CLIENT_NAME}"
 echo "  VPN IP: ${CLIENT_IP}"

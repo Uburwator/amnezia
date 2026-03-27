@@ -1,0 +1,40 @@
+{
+  "containers": [
+    {
+      "container": "amnezia-awg2",
+      "awg": {
+        "config": "[Interface]\nAddress = 10.66.66.3/32\nDNS = 1.1.1.1, 1.0.0.1\nPrivateKey = ...\nJc = 5\nJmin = 57\n...",
+        "hostName": "bl.ubur.net",
+        "port": 55555,
+        "client_priv_key": "CLIENT_PRIVATE_KEY_HERE",
+        "client_ip": "10.66.66.3",
+        "server_pub_key": "SERVER_PUBLIC_KEY_HERE",
+        "psk_key": "PRESHARED_KEY_HERE",
+        "mtu": "1280",
+        "persistent_keep_alive": "25",
+        "allowed_ips": ["0.0.0.0/0", "::/0"],
+        "junkPacketCount": "5",
+        "junkPacketMinSize": "57",
+        "junkPacketMaxSize": "1242",
+        "initPacketJunkSize": "129",
+        "responsePacketJunkSize": "83",
+        "cookieReplyPacketJunkSize": "49",
+        "transportPacketJunkSize": "99",
+        "initPacketMagicHeader": "125846151-898407554",
+        "responsePacketMagicHeader": "959053812-1066514477",
+        "underloadPacketMagicHeader": "1474249607-1476151460",
+        "transportPacketMagicHeader": "1505335300-2147483647",
+        "specialJunk1": "<b 0x474554202f20485454502f312e310d0a486f73743a20>",
+        "specialJunk2": "<rc 7><b 0x2e636f6d0d0a>",
+        "specialJunk3": "<b 0x557365722d4167656e743a204d6f7a696c6c612f352e300d0a>",
+        "specialJunk4": "<b 0x436f6e6e656374696f6e3a206b6565702d616c6976650d0a0d0a><r 20>",
+        "specialJunk5": "<t><b 0x0100000100000000000000><rc 6><b 0x03636f6d000001000001>"
+      }
+    }
+  ],
+  "defaultContainer": "amnezia-awg2",
+  "description": "AmneziaWG",
+  "dns1": "1.1.1.1",
+  "dns2": "1.0.0.1",
+  "hostName": "bl.ubur.net"
+}
