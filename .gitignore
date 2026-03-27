@@ -1,0 +1,20 @@
+# Backup files
+*.tar.gz
+*.backup
+*.bak
+
+# Temporary files
+*.tmp
+.DS_Store
+
+# Config files (contain private keys - never commit!)
+*.conf
+*.key
+awg0.conf
+server_*.key
+preshared.key
+obfuscation-params.txt
+
+# Test data
+test/
+*.log
