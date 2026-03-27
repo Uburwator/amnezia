@@ -155,7 +155,13 @@ sudo amneziawg backup
 
 ### Import Config to Client
 
-**On iOS/Android:**
+**On iOS (Method 1 - QR Code):**
+1. The add-client script generates a QR code automatically
+2. Scan with AmneziaVPN app camera
+3. Config imports automatically
+4. Connect!
+
+**On iOS/Android (Method 2 - File Import):**
 1. Copy the `.conf` file to your device
 2. Open AmneziaVPN app
 3. Settings → Import from file

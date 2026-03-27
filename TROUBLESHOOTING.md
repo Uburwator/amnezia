@@ -187,18 +187,21 @@ dos2unix /opt/amnezia/awg/clients/laptop.conf
 **Symptoms:**
 - Scanning QR code shows: "qUncompress: Input data is corrupted"
 - Or: "qUncompress: Not enough memory"
-- File import of same config works fine
 
 **Cause:**
-iOS AmneziaVPN client (v4.8.14) has issues with Qt's qCompress format. The compression/decompression doesn't match between platforms.
+Wrong QR code format. iOS requires specific Base64 encoding **without** the `vpn://` prefix.
 
 **Solution:**
-**Use file import instead of QR codes!**
+Use the updated add-client.sh script (v1.1+) which generates **Format 6** QR codes.
 
-QR codes are experimental and unreliable. File import works perfectly:
-1. Copy `.conf` file to your device (AirDrop/iCloud/Email)
-2. AmneziaVPN app → Import from file
-3. Select the `.conf` file
+**Format 6 works because:**
+- ✅ Base64-encoded (URL-safe, no padding)
+- ✅ NO `vpn://` prefix (this was breaking it!)
+- ✅ Compressed JSON with Qt header
+- ✅ Includes full v2 config (S3/S4, I1-I5)
+
+**If using old scripts:**
+Regenerate QR codes with the updated script, or use file import as a fallback.
 
 ### I5 Parameter Parse Error
 

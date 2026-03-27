@@ -1,6 +1,7 @@
 #!/bin/bash
 # AmneziaWG Add Client Script
 # Adds new VPN clients with hot reload (no container restart)
+# Generates working QR codes (Format 6 - iOS compatible)
 
 set -e
 
@@ -119,12 +120,12 @@ CLIENT_IP="${SUBNET_PREFIX}.${NEXT_OCTET}"
 echo "    ✓ Assigned IP: $CLIENT_IP"
 
 echo
-echo "[1/4] Generating client keys..."
+echo "[1/5] Generating client keys..."
 CLIENT_PRIV_KEY=$(docker run --rm amneziavpn/amneziawg-go:latest awg genkey)
 CLIENT_PUB_KEY=$(echo "$CLIENT_PRIV_KEY" | docker run --rm -i amneziavpn/amneziawg-go:latest awg pubkey)
 echo "    ✓ Keys generated"
 
-echo "[2/4] Adding peer to server..."
+echo "[2/5] Adding peer to server..."
 cat >> "${AWG_CONFIG_DIR}/awg0.conf" <<PEER
 
 [Peer]
@@ -135,13 +136,13 @@ AllowedIPs = ${CLIENT_IP}/32
 PEER
 echo "    ✓ Peer added"
 
-echo "[3/4] Reloading server config..."
+echo "[3/5] Reloading server config..."
 docker exec ${CONTAINER_NAME} sh -c "awg-quick strip /opt/amnezia/awg/awg0.conf > /tmp/awg0-stripped.conf" 2>/dev/null
 docker exec ${CONTAINER_NAME} awg syncconf awg0 /tmp/awg0-stripped.conf
 docker exec ${CONTAINER_NAME} rm /tmp/awg0-stripped.conf
 echo "    ✓ Config reloaded (no restart)"
 
-echo "[4/4] Generating client config..."
+echo "[4/5] Generating client config..."
 
 # HTTP/DNS Signature Packets
 I1='<b 0x474554202f20485454502f312e310d0a486f73743a20>'
@@ -183,6 +184,74 @@ CLIENTCONF
 chmod 600 "${AWG_CONFIG_DIR}/clients/${CLIENT_NAME}.conf"
 echo "    ✓ Client config created"
 
+echo "[5/5] Generating QR code..."
+
+# Generate QR code using Format 6 (iOS compatible)
+if command -v python3 &>/dev/null && command -v qrencode &>/dev/null; then
+    python3 - "${AWG_CONFIG_DIR}/clients/${CLIENT_NAME}.conf" "${SERVER_ENDPOINT}" "${AWG_PORT}" <<'PYTHON_SCRIPT'
+import sys
+import json
+import zlib
+import base64
+import subprocess
+
+config_file = sys.argv[1]
+server_ip = sys.argv[2]
+server_port = sys.argv[3]
+
+# Read config text
+with open(config_file, 'r') as f:
+    config_text = f.read()
+
+# Create minimal JSON structure
+compact_json = {
+    "containers": [{
+        "container": "amnezia-awg",
+        "awg": {
+            "config": config_text,
+            "hostName": server_ip,
+            "port": int(server_port)
+        }
+    }],
+    "defaultContainer": "amnezia-awg",
+    "hostName": server_ip
+}
+
+# Convert to JSON
+json_data = json.dumps(compact_json, separators=(',', ':')).encode('utf-8')
+
+# Compress with Qt header (4-byte size + zlib)
+compressed = zlib.compress(json_data, 8)
+qt_compressed = len(json_data).to_bytes(4, 'big') + compressed
+
+# Base64 encode (URL-safe, no padding) - NO vpn:// prefix!
+b64_data = base64.urlsafe_b64encode(qt_compressed).decode('ascii').rstrip('=')
+
+# Display QR in terminal
+print()
+try:
+    subprocess.run(['qrencode', '-t', 'ansiutf8', b64_data], check=True)
+    
+    # Save as PNG
+    qr_png = config_file.replace('.conf', '-qr.png')
+    subprocess.run(['qrencode', '-t', 'PNG', '-o', qr_png, '-s', '8', b64_data], check=True)
+    print(f"\n    ✓ QR code saved: {qr_png}")
+    print(f"      Size: {len(b64_data)} bytes (Format 6 - iOS compatible)")
+    
+except Exception as e:
+    print(f"    ✗ QR generation failed: {e}")
+
+PYTHON_SCRIPT
+else
+    if ! command -v python3 &>/dev/null; then
+        echo -e "${YELLOW}    ⚠ Python3 not installed - QR code skipped${NC}"
+        echo "      Install with: apt install python3 qrencode"
+    elif ! command -v qrencode &>/dev/null; then
+        echo -e "${YELLOW}    ⚠ qrencode not installed - QR code skipped${NC}"
+        echo "      Install with: apt install qrencode"
+    fi
+fi
+
 echo
 echo -e "${GREEN}=== Client Added Successfully! ===${NC}"
 echo
@@ -190,15 +259,19 @@ echo "Client: ${CLIENT_NAME}"
 echo "  VPN IP: ${CLIENT_IP}"
 echo "  Endpoint: ${SERVER_ENDPOINT}:${AWG_PORT}"
 echo "  Config: ${AWG_CONFIG_DIR}/clients/${CLIENT_NAME}.conf"
+if [ -f "${AWG_CONFIG_DIR}/clients/${CLIENT_NAME}-qr.png" ]; then
+    echo "  QR Code: ${AWG_CONFIG_DIR}/clients/${CLIENT_NAME}-qr.png"
+fi
 echo
-echo -e "${YELLOW}Import Instructions:${NC}"
-echo "  1. Copy config to your device:"
-echo "     scp root@server:${AWG_CONFIG_DIR}/clients/${CLIENT_NAME}.conf ."
+echo -e "${YELLOW}Import to AmneziaVPN app:${NC}"
+echo "  ${GREEN}Option 1 (QR Code - iOS):${NC}"
+echo "    • Scan the QR code above or open the PNG file"
+echo "    • AmneziaVPN app will import automatically"
 echo
-echo "  2. Transfer to iPhone/Android (AirDrop/iCloud/Email)"
-echo
-echo "  3. AmneziaVPN app → Settings → Import from file"
-echo "     (Do NOT use QR code - use file import)"
+echo "  ${GREEN}Option 2 (File Import - All platforms):${NC}"
+echo "    1. Copy config to your device:"
+echo "       scp root@server:${AWG_CONFIG_DIR}/clients/${CLIENT_NAME}.conf ."
+echo "    2. AmneziaVPN app → Settings → Import from file"
 echo
 echo -e "${GREEN}Verify connection:${NC}"
 echo "  docker exec ${CONTAINER_NAME} awg show awg0"
