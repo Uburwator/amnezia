@@ -14,8 +14,8 @@ following design principles:
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐
-│                         VPS Host                             │
-│                                                              │
+│                         VPS Host                            │
+│                                                             │
 │  ┌────────────────────────────────────────────────────┐    │
 │  │  Docker Bridge Network: amnezia-dns-net            │    │
 │  │  Subnet: 172.29.172.0/24                           │    │

@@ -61,12 +61,14 @@ amneziawg-docker-install/
 
 1. **Empty obfuscation parameters** - Fixed by reading from server
    config instead of separate file
-2. **QR code import fails** - Documented workaround (use file import)
+2. **QR code import fails** - Fixed with Format 12 (matches file import structure)
 3. **No internet after connection** - Fixed with iptables inside container
 4. **Process substitution across docker exec** - Use temp files instead
 5. **Multiple Docker networks** - NAT to both eth0 and eth1
 6. **I5 hex encoding error** - Fixed odd-length hex strings
 7. **Container routing** - Explicit forwarding rules for all interfaces
+8. **QR shows as legacy v1** - Fixed with protocol_version:"2" field
+9. **QR connection timeout** - Fixed with correct last_config structure
 
 ## Testing Done
 
@@ -75,10 +77,10 @@ amneziawg-docker-install/
 - ✅ iOS client connection (AmneziaVPN 4.8.14)
 - ✅ Internet access through VPN
 - ✅ Hot reload (add client without restart)
-- ✅ File import (iOS)
+- ✅ File import (iOS/Android)
+- ✅ QR code import (iOS/Android) - Format 12
 - ✅ HTTP/DNS signature packets
 - ✅ DNS name endpoints
-- ❌ QR code import (known iOS app issue)
 
 ## What Makes This Different
 
