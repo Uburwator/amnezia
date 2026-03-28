@@ -16,42 +16,42 @@ following design principles:
 ┌─────────────────────────────────────────────────────────────┐
 │                         VPS Host                            │
 │                                                             │
-│  ┌────────────────────────────────────────────────────┐    │
-│  │  Docker Bridge Network: amnezia-dns-net            │    │
-│  │  Subnet: 172.29.172.0/24                           │    │
-│  │  Bridge: amn0                                      │    │
-│  │                                                      │    │
-│  │  ┌────────────────────────────────────────────┐    │    │
-│  │  │  Container: amnezia-awg                    │    │    │
-│  │  │  Image: amneziavpn/amneziawg-go:latest     │    │    │
-│  │  │                                             │    │    │
-│  │  │  Network Interfaces:                       │    │    │
-│  │  │  ├─ eth0: 172.29.172.X (DNS network)      │    │    │
-│  │  │  ├─ eth1: 172.17.0.X (default bridge)     │    │    │
-│  │  │  └─ awg0: 10.66.66.1/24 (VPN tunnel)      │    │    │
-│  │  │                                             │    │    │
-│  │  │  Volumes:                                  │    │    │
-│  │  │  ├─ /lib/modules (ro, kernel modules)     │    │    │
-│  │  │  └─ /opt/amnezia/awg (rw, config)         │    │    │
-│  │  │                                             │    │    │
-│  │  │  Capabilities:                             │    │    │
-│  │  │  ├─ NET_ADMIN (create interfaces)         │    │    │
-│  │  │  ├─ SYS_MODULE (load kernel modules)      │    │    │
-│  │  │  └─ Privileged (iptables)                 │    │    │
-│  │  └────────────────────────────────────────────┘    │    │
-│  └────────────────────────────────────────────────────┘    │
-│                                                              │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │  Docker Bridge Network: amnezia-dns-net             │    │
+│  │  Subnet: 172.29.172.0/24                            │    │
+│  │  Bridge: amn0                                       │    │
+│  │                                                     │    │
+│  │  ┌─────────────────────────────────────────────┐   │     │
+│  │  │  Container: amnezia-awg                     │   │     │
+│  │  │  Image: amneziavpn/amneziawg-go:latest      │   │     │
+│  │  │                                             │   │     │
+│  │  │  Network Interfaces:                        │   │     │
+│  │  │  ├─ eth0: 172.29.172.X (DNS network)        │   │     │
+│  │  │  ├─ eth1: 172.17.0.X (default bridge)       │   │     │
+│  │  │  └─ awg0: 10.66.66.1/24 (VPN tunnel)        │   │     │
+│  │  │                                             │   │     │
+│  │  │  Volumes:                                   │   │     │
+│  │  │  ├─ /lib/modules (ro, kernel modules)       │   │     │
+│  │  │  └─ /opt/amnezia/awg (rw, config)           │   │     │
+│  │  │                                             │   │     │
+│  │  │  Capabilities:                              │   │     │
+│  │  │  ├─ NET_ADMIN (create interfaces)           │   │     │
+│  │  │  ├─ SYS_MODULE (load kernel modules)        │   │     │
+│  │  │  └─ Privileged (iptables)                   │   │     │
+│  │  └─────────────────────────────────────────────┘   │     │
+│  └─────────────────────────────────────────────────────┘    │
+│                                                             │
 │  Host Network:                                              │
-│  ├─ eth0: Public IP (e.g., 204.168.174.98)                 │
-│  ├─ Port mapping: 0.0.0.0:51821 → container:51821/udp      │
-│  └─ IP forwarding: Enabled (sysctl)                        │
-│                                                              │
+│  ├─ eth0: Public IP (e.g., 204.168.174.98)                  │
+│  ├─ Port mapping: 0.0.0.0:51821 → container:51821/udp       │
+│  └─ IP forwarding: Enabled (sysctl)                         │
+│                                                             │
 │  Filesystem:                                                │
-│  └─ /opt/amnezia/awg/ (host storage)                       │
-│     ├─ awg0.conf (server config)                           │
-│     ├─ *.key (cryptographic keys)                          │
-│     ├─ start.sh (container entrypoint)                     │
-│     └─ clients/ (client configs)                           │
+│  └─ /opt/amnezia/awg/ (host storage)                        │
+│     ├─ awg0.conf (server config)                            │
+│     ├─ *.key (cryptographic keys)                           │
+│     ├─ start.sh (container entrypoint)                      │
+│     └─ clients/ (client configs)                            │
 └─────────────────────────────────────────────────────────────┘
                           │
                           │ VPN Tunnel (UDP 51821)
