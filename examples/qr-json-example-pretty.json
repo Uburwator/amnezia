@@ -5,7 +5,7 @@
       "awg": {
         "last_config": "{ <-- This is a JSON STRING containing all config details",
         "isThirdPartyConfig": true,
-        "port": 55555,
+        "port": 51821,
         "protocol_version": "2",
         "transport_proto": "udp"
       }
@@ -15,12 +15,12 @@
   "description": "AmneziaWG",
   "dns1": "1.1.1.1",
   "dns2": "1.0.0.1",
-  "hostName": "bl.ubur.net"
+  "hostName": "vpn.example.net"
 }
 
 NOTES:
 - Container: "amnezia-awg" (v1 name, NOT "amnezia-awg2")
 - protocol_version: "2" tells app to use AWG v2 features
 - last_config: Nested JSON string with UPPERCASE field names (Jc, S3, I1)
-- port: VPN port (55555), not SSH port
+- port: VPN port (51821), not SSH port
 - NO vpn:// prefix in Base64 QR data!

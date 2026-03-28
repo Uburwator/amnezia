@@ -2,11 +2,12 @@
 
 ## What's Inside
 
-This repository contains everything needed to set up AmneziaWG VPN server using Docker.
+This repository contains everything needed to set up AmneziaWG VPN
+server using Docker.
 
 ### Files Created
 
-```
+```text
 amneziawg-docker-install/
 ├── README.md                          # Main documentation (English)
 ├── README.ru.md                       # Russian documentation
@@ -31,7 +32,7 @@ amneziawg-docker-install/
 
 ### What Gets Created on VPS
 
-```
+```text
 /opt/amnezia/awg/
 ├── awg0.conf                          # Server configuration
 ├── server_private.key                 # Server private key (600)
@@ -58,7 +59,8 @@ amneziawg-docker-install/
 
 ## Issues Solved During Development
 
-1. **Empty obfuscation parameters** - Fixed by reading from server config instead of separate file
+1. **Empty obfuscation parameters** - Fixed by reading from server
+   config instead of separate file
 2. **QR code import fails** - Documented workaround (use file import)
 3. **No internet after connection** - Fixed with iptables inside container
 4. **Process substitution across docker exec** - Use temp files instead
@@ -116,17 +118,20 @@ amneziawg-docker-install/
 ## Documentation Philosophy
 
 All documentation includes:
+
 - Clear examples
 - Expected output
 - Troubleshooting steps
 - Security considerations
 - What was learned during development
 
-Every issue encountered is documented in TROUBLESHOOTING.md with solutions.
+Every issue encountered is documented in TROUBLESHOOTING.md with
+solutions.
 
 ## Ready for GitHub
 
 The project is structured for easy publishing:
+
 - Clear README with security warnings
 - Comprehensive documentation
 - Working scripts (tested)

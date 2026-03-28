@@ -6,7 +6,7 @@ set -e
 
 # Configuration variables
 AWG_CONFIG_DIR="/opt/amnezia/awg"
-AWG_PORT="${AWG_PORT:-51820}"
+AWG_PORT="${AWG_PORT:-51821}"
 AWG_SUBNET_IP="${AWG_SUBNET_IP:-10.66.66.1}"
 AWG_SUBNET_CIDR="${AWG_SUBNET_CIDR:-24}"
 CONTAINER_NAME="amnezia-awg"
@@ -217,7 +217,7 @@ iptables -t nat -A POSTROUTING -s ${VPN_SUBNET} -o eth0 -j MASQUERADE 2>/dev/nul
 iptables -t nat -A POSTROUTING -s ${VPN_SUBNET} -o eth1 -j MASQUERADE 2>/dev/null || true
 
 echo "AmneziaWG started successfully"
-echo "Listening on port ${AWG_PORT:-51820}"
+echo "Listening on port ${AWG_PORT:-51821}"
 echo "VPN subnet: ${VPN_SUBNET}"
 
 # Keep container running

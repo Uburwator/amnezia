@@ -1,12 +1,14 @@
 # AmneziaWG Docker Installer
 
-Easy-to-use installation scripts for setting up AmneziaWG VPN server using Docker with stateless containers and host-based configuration.
+Easy-to-use installation scripts for setting up AmneziaWG VPN server
+using Docker with stateless containers and host-based configuration.
 
 ## ⚠️ SECURITY WARNING
 
 **NEVER blindly download and run bash scripts with root privileges!**
 
-This is extremely dangerous and can compromise your entire system. Before running ANY script from the internet:
+This is extremely dangerous and can compromise your entire system.
+Before running ANY script from the internet:
 
 1. **Clone the repository** and review ALL source code
 2. **Understand what each command does**
@@ -31,6 +33,7 @@ sudo bash install.sh
 ```
 
 **Running scripts from unknown sources can:**
+
 - Install backdoors and malware
 - Steal credentials and private keys
 - Compromise your server
@@ -70,7 +73,8 @@ sudo bash install.sh
 sudo amneziawg add-client laptop
 ```
 
-That's it! Copy the generated config file to your device and import it into the [AmneziaVPN app](https://amnezia.org/downloads).
+That's it! Copy the generated config file to your device and import it
+into the [AmneziaVPN app](https://amnezia.org/downloads).
 
 ## Requirements
 
@@ -85,7 +89,9 @@ That's it! Copy the generated config file to your device and import it into the 
 ### Method 1: One-Line Install (Recommended)
 
 ```bash
-wget -O - https://raw.githubusercontent.com/YOUR-USERNAME/amneziawg-docker-install/main/install.sh | sudo bash
+wget -O - \
+https://raw.githubusercontent.com/YOUR-USERNAME/\
+amneziawg-docker-install/main/install.sh | sudo bash
 ```
 
 ### Method 2: Manual Install
@@ -106,7 +112,7 @@ Set environment variables before installation:
 ```bash
 export AWG_SUBNET_IP="10.66.66.1"    # VPN server IP (default: 10.66.66.1)
 export AWG_SUBNET_CIDR="24"          # Subnet mask (default: 24)
-export AWG_PORT="55555"               # VPN port (default: 51820)
+export AWG_PORT="51821"               # VPN port (default: 51821)
 export SERVER_ENDPOINT="vpn.example.com"  # Server DNS name (auto-detected)
 
 sudo -E bash install.sh
@@ -156,12 +162,14 @@ sudo amneziawg backup
 ### Import Config to Client
 
 **On iOS (Method 1 - QR Code):**
+
 1. The add-client script generates a QR code automatically
 2. Scan with AmneziaVPN app camera
 3. Config imports automatically
 4. Connect!
 
 **On iOS/Android (Method 2 - File Import):**
+
 1. Copy the `.conf` file to your device
 2. Open AmneziaVPN app
 3. Settings → Import from file
@@ -169,6 +177,7 @@ sudo amneziawg backup
 5. Connect!
 
 **On Linux/macOS:**
+
 ```bash
 # Install AmneziaWG tools
 # See: https://github.com/amnezia-vpn/amneziawg-tools
@@ -181,7 +190,7 @@ sudo awg-quick up laptop.conf
 
 ### Architecture
 
-```
+```text
 ┌─────────────────────────────────────────────┐
 │              VPS Host                        │
 │                                              │
@@ -190,7 +199,7 @@ sudo awg-quick up laptop.conf
 │  │                                     │    │
 │  │  ┌──────────────────────────────┐  │    │
 │  │  │  awg0: 10.66.66.1/24         │  │    │
-│  │  │  Port: 55555/UDP             │  │    │
+│  │  │  Port: 51821/UDP             │  │    │
 │  │  │                               │  │    │
 │  │  │  Config (mounted from host): │  │    │
 │  │  │  /opt/amnezia/awg/           │  │    │
@@ -234,20 +243,27 @@ sudo awg-quick up laptop.conf
 AmneziaWG disguises VPN traffic as legitimate HTTP/DNS requests using:
 
 ### Junk Packets (Jc, Jmin, Jmax)
-Random packets of varying sizes sent before handshakes to make traffic unpredictable.
+
+Random packets of varying sizes sent before handshakes to make traffic
+unpredictable.
 
 ### Padding (S1-S4)
+
 - **S1**: Handshake initiation padding
 - **S2**: Handshake response padding
 - **S3**: Cookie reply padding
 - **S4**: Transport message padding
 
 ### Magic Headers (H1-H4)
-Randomize the packet type field with non-overlapping ranges to avoid WireGuard's distinctive signatures.
+
+Randomize the packet type field with non-overlapping ranges to avoid
+WireGuard's distinctive signatures.
 
 ### Signature Packets (I1-I5)
+
 Custom packets sent before handshakes that mimic real protocols:
-- **I1**: `GET / HTTP/1.1\r\nHost: ` - HTTP request start
+
+- **I1**: `GET / HTTP/1.1\r\nHost:` - HTTP request start
 - **I2**: Random domain name + `.com\r\n`
 - **I3**: `User-Agent: Mozilla/5.0\r\n` - Browser header
 - **I4**: `Connection: keep-alive\r\n\r\n` + random data
@@ -255,7 +271,7 @@ Custom packets sent before handshakes that mimic real protocols:
 
 ## File Structure
 
-```
+```text
 /opt/amnezia/awg/
 ├── awg0.conf                # Server configuration
 ├── server_private.key       # Server private key (600)
@@ -273,9 +289,10 @@ Custom packets sent before handshakes that mimic real protocols:
 
 ### External Firewall (Cloud Provider)
 
-**Required**: Allow UDP port (default: 51820) inbound
+**Required**: Allow UDP port (default: 51821) inbound
 
 Configure in your provider's dashboard:
+
 - **DigitalOcean**: Networking → Firewalls
 - **Hetzner**: Firewalls → Rules
 - **Vultr**: Firewall → Add Rule
@@ -284,6 +301,7 @@ Configure in your provider's dashboard:
 ### Container Firewall (Automatic)
 
 Handled automatically by `start.sh`:
+
 - IP forwarding enabled
 - NAT/masquerading for VPN subnet
 - Forwarding rules for awg0 interface
@@ -299,6 +317,7 @@ Handled automatically by `start.sh`:
 **Cause**: Container's iptables rules missing or incorrect
 
 **Solution**:
+
 ```bash
 # Check if start.sh has iptables rules
 cat /opt/amnezia/awg/start.sh | grep iptables
@@ -319,14 +338,15 @@ docker exec amnezia-awg iptables -t nat -L POSTROUTING -n
 **Cause**: Configuration mismatch between client and server
 
 **Solution**:
+
 ```bash
 # Verify client's public key is in server config
 docker exec amnezia-awg awg show awg0
 # Compare peer public key with client config
 
 # Check obfuscation parameters match
-grep "^Jc = " /opt/amnezia/awg/awg0.conf
-grep "^Jc = " /opt/amnezia/awg/clients/laptop.conf
+grep "^Jc =" /opt/amnezia/awg/awg0.conf
+grep "^Jc =" /opt/amnezia/awg/clients/laptop.conf
 # All parameters must be identical!
 ```
 
@@ -337,7 +357,7 @@ grep "^Jc = " /opt/amnezia/awg/clients/laptop.conf
 **Causes and Solutions**:
 
 1. **Empty obfuscation parameters**
-   - Check config file has values: `Jc = 5` not `Jc = `
+   - Check config file has values: `Jc = 5` not `Jc =`
    - Regenerate client with updated script
 
 2. **Missing I1-I5 parameters**
@@ -359,6 +379,7 @@ grep "^Jc = " /opt/amnezia/awg/clients/laptop.conf
 **Cause**: iOS AmneziaVPN client has issues with Qt's compression format
 
 **Solution**: **Use file import instead**
+
 - File import works reliably
 - QR codes are experimental and buggy
 - Transfer `.conf` file via AirDrop/iCloud/Email
@@ -368,11 +389,12 @@ grep "^Jc = " /opt/amnezia/awg/clients/laptop.conf
 **Symptoms**: Container won't start, port conflict
 
 **Solution**:
+
 ```bash
 # Check what's using the port
-sudo netstat -uln | grep 55555
+sudo netstat -uln | grep 51821
 # or
-sudo ss -uln | grep 55555
+sudo ss -uln | grep 51821
 
 # Change port if needed
 export AWG_PORT="51821"
@@ -386,6 +408,7 @@ sudo -E bash install.sh
 **Cause**: Docker networking misconfigured
 
 **Solution**:
+
 ```bash
 # Check container has default route
 docker exec amnezia-awg ip route
@@ -412,6 +435,7 @@ docker exec amnezia-awg ip route
 **Cause**: Container connected to multiple Docker networks
 
 **Solution**:
+
 ```bash
 # Check container's routing
 docker exec amnezia-awg ip route
@@ -431,7 +455,9 @@ docker exec amnezia-awg iptables -t nat -L -n | grep MASQUERADE
 **Cause**: Forwarding between VPN clients disabled
 
 **Solution**:
+
 Add to `/opt/amnezia/awg/start.sh`:
+
 ```bash
 iptables -A FORWARD -i awg0 -o awg0 -j ACCEPT
 ```
@@ -471,7 +497,7 @@ Jmax = 1280   # Maximum junk size (MTU limit)
 
 If signature packets cause issues, edit the add-client script and set:
 
-```bash
+```ini
 I1=''
 I2=''
 I3=''
@@ -484,19 +510,22 @@ Or remove those lines entirely from client configs.
 ### Use Different Signature Patterns
 
 **TLS Handshake:**
-```
+
+```ini
 I1 = <b 0x160301>
 I2 = <r 100>
 ```
 
 **SSH:**
-```
+
+```ini
 I1 = <b 0x5353482d322e30>
 I2 = <r 50>
 ```
 
 **Custom:**
-```
+
+```ini
 I1 = <b 0xYOURHEXDATA>
 I2 = <rc 20>           # 20 random letters
 I3 = <rd 10>           # 10 random digits
@@ -504,7 +533,9 @@ I4 = <r 30>            # 30 random bytes
 I5 = <t>               # Current timestamp
 ```
 
-See [AmneziaWG documentation](https://github.com/amnezia-vpn/amneziawg-go#custom-signature-packets) for tag syntax.
+See
+[AmneziaWG documentation](https://github.com/amnezia-vpn/amneziawg-go#custom-signature-packets)
+for tag syntax.
 
 ## Backup and Restore
 
@@ -518,6 +549,7 @@ sudo amneziawg backup
 ```
 
 The backup includes:
+
 - Server keys
 - Server configuration
 - All client configurations
@@ -550,7 +582,7 @@ If you're running native WireGuard on the same host:
 ## Comparison with Official Amnezia Client
 
 | Feature | Official Client | This Installer |
-|---------|----------------|----------------|
+| ------- | --------------- | -------------- |
 | **Method** | SSH + Docker deployment | Manual Docker setup |
 | **Platform** | Desktop GUI app | Command-line scripts |
 | **Configuration** | Stored in app | Stored on VPS host |
@@ -563,11 +595,13 @@ If you're running native WireGuard on the same host:
 ### What Data is Stored
 
 **On VPS**:
+
 - Server private key (`/opt/amnezia/awg/server_private.key`)
 - Client private keys (`/opt/amnezia/awg/clients/*.conf`)
 - Preshared key (shared by all clients)
 
 **Best Practices**:
+
 1. Set proper file permissions (done automatically)
 2. Encrypt backups before storing remotely
 3. Use strong passwords for VPS access
@@ -578,7 +612,8 @@ If you're running native WireGuard on the same host:
 
 **No telemetry**: This installer sends no data to third parties
 
-**Traffic analysis**: Obfuscation parameters make DPI detection difficult but not impossible
+**Traffic analysis**: Obfuscation parameters make DPI detection
+difficult but not impossible
 
 **DNS leaks**: Configure clients to use VPN DNS to prevent leaks
 
@@ -627,34 +662,49 @@ sudo rm /usr/local/bin/amneziawg
 ## FAQ
 
 ### Q: Can I use this with existing WireGuard?
-**A**: Yes! Use different subnets and ports. Both can run simultaneously.
+
+**A**: Yes! Use different subnets and ports. Both can run
+simultaneously.
 
 ### Q: Do I need to restart the container when adding clients?
+
 **A**: No! The script uses hot reload (`awg syncconf`).
 
 ### Q: Can I change my server IP later?
-**A**: Yes, if using DNS names. Just update DNS records. If using IP addresses, regenerate all client configs.
+
+**A**: Yes, if using DNS names. Just update DNS records. If using IP
+addresses, regenerate all client configs.
 
 ### Q: What's the difference from standard WireGuard?
-**A**: AmneziaWG adds obfuscation to bypass DPI. Protocol is compatible but includes extra parameters.
+
+**A**: AmneziaWG adds obfuscation to bypass DPI. Protocol is compatible
+but includes extra parameters.
 
 ### Q: Is this secure?
-**A**: Yes. Based on WireGuard (audited), adds obfuscation and preshared keys (post-quantum security).
+
+**A**: Yes. Based on WireGuard (audited), adds obfuscation and preshared
+keys (post-quantum security).
 
 ### Q: Why not use the official Amnezia client?
-**A**: This gives you full control, works on headless servers, and stores config on the VPS for easy management.
+
+**A**: This gives you full control, works on headless servers, and stores
+config on the VPS for easy management.
 
 ### Q: QR codes don't work?
-**A**: Known issue with iOS app compression. Use file import instead - it's more reliable.
+
+**A**: Known issue with iOS app compression. Use file import instead -
+it's more reliable.
 
 ### Q: Can I run this without Docker?
-**A**: Use the native installer instead: https://github.com/wiresock/amneziawg-install
+
+**A**: Use the native installer instead:
+<https://github.com/wiresock/amneziawg-install>
 
 ## Credits
 
-- **AmneziaVPN Project**: https://github.com/amnezia-vpn
-- **AmneziaWG Protocol**: https://github.com/amnezia-vpn/amneziawg-go
-- **WireGuard**: https://www.wireguard.com/
+- **AmneziaVPN Project**: <https://github.com/amnezia-vpn>
+- **AmneziaWG Protocol**: <https://github.com/amnezia-vpn/amneziawg-go>
+- **WireGuard**: <https://www.wireguard.com/>
 
 ## License
 
@@ -663,6 +713,7 @@ MIT License - See LICENSE file
 ## Contributing
 
 Contributions welcome! Please:
+
 1. Fork the repository
 2. Create a feature branch
 3. Test thoroughly
@@ -670,13 +721,15 @@ Contributions welcome! Please:
 
 ## Support
 
-- **Issues**: https://github.com/YOUR-USERNAME/amneziawg-docker-install/issues
-- **AmneziaVPN Docs**: https://docs.amnezia.org
-- **Telegram**: https://t.me/amnezia_vpn_en
+- **Issues**:
+  <https://github.com/YOUR-USERNAME/amneziawg-docker-install/issues>
+- **AmneziaVPN Docs**: <https://docs.amnezia.org>
+- **Telegram**: <https://t.me/amnezia_vpn_en>
 
 ## Changelog
 
 ### Version 1.0.0 (2026-03-27)
+
 - Initial release
 - Docker-based installation
 - Hot reload support

@@ -1,6 +1,7 @@
 # Contributing to AmneziaWG Docker Install
 
-Thank you for your interest in contributing! This project aims to provide a secure, easy-to-use installer for AmneziaWG VPN servers.
+Thank you for your interest in contributing! This project aims to provide
+a secure, easy-to-use installer for AmneziaWG VPN servers.
 
 ## Code of Conduct
 
@@ -14,12 +15,14 @@ Thank you for your interest in contributing! This project aims to provide a secu
 ### Reporting Issues
 
 Before opening an issue:
+
 1. Check existing issues for duplicates
 2. Gather diagnostic information
 3. Include your OS, Docker version, and setup details
 4. Provide logs and error messages
 
 **Diagnostic info to include:**
+
 ```bash
 # System info
 uname -a
@@ -37,6 +40,7 @@ cat /opt/amnezia/awg/awg0.conf | sed 's/PrivateKey = .*/PrivateKey = [REDACTED]/
 
 1. **Fork the repository**
 2. **Create a feature branch**
+
    ```bash
    git checkout -b feature/your-feature-name
    ```
@@ -76,6 +80,7 @@ cat /opt/amnezia/awg/awg0.conf | sed 's/PrivateKey = .*/PrivateKey = [REDACTED]/
 ### Code Review Focus
 
 When reviewing PRs, check for:
+
 - Command injection vulnerabilities
 - Unvalidated user input
 - Missing error handling
@@ -180,9 +185,12 @@ trap "rm -f /tmp/tempfile" EXIT
 ## Questions?
 
 Open an issue or reach out:
-- Issues: https://github.com/YOUR-USERNAME/amneziawg-docker-install/issues
-- Discussions: https://github.com/YOUR-USERNAME/amneziawg-docker-install/discussions
 
-## Thank You!
+- Issues: <https://github.com/YOUR-USERNAME/amneziawg-docker-install/issues>
+- Discussions:
+  <https://github.com/YOUR-USERNAME/amneziawg-docker-install/discussions>
 
-Your contributions help make secure VPN access easier and more accessible. Every bug report, documentation improvement, and code contribution matters!
+## Thank You
+
+Your contributions help make secure VPN access easier and more accessible.
+Every bug report, documentation improvement, and code contribution matters!

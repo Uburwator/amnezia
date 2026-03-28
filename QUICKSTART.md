@@ -1,10 +1,12 @@
 # Quick Start Guide
 
-This is a condensed guide for experienced users. **New users should read README.md first!**
+This is a condensed guide for experienced users.
+**New users should read README.md first!**
 
 ## ⚠️ Security Warning
 
-**Review all code before running with root privileges!** See README.md for full warning.
+**Review all code before running with root privileges!**
+See README.md for full warning.
 
 ## Installation (3 minutes)
 
@@ -32,7 +34,7 @@ scp root@your-vps:/opt/amnezia/awg/clients/laptop.conf .
 ```bash
 # Set before install.sh
 export AWG_SUBNET_IP="10.66.66.1"     # VPN subnet
-export AWG_PORT="55555"                # VPN port
+export AWG_PORT="51821"                # VPN port
 export SERVER_ENDPOINT="vpn.example.com"  # Your domain
 
 sudo -E bash install.sh
@@ -67,7 +69,8 @@ docker restart amnezia-awg
 ## Firewall Setup
 
 **Cloud provider dashboard** (DigitalOcean/Hetzner/etc.):
-- Allow **UDP port 55555** inbound
+
+- Allow **UDP port 51821** inbound
 
 **No iptables config needed on host** - handled by container!
 
@@ -90,6 +93,7 @@ docker restart amnezia-awg
 ### Config Mismatch
 
 Regenerate client:
+
 ```bash
 rm /opt/amnezia/awg/clients/laptop.conf
 # Edit awg0.conf and remove the [Peer] section
@@ -99,6 +103,7 @@ sudo bash scripts/add-client.sh laptop
 ## Verification
 
 After client connects:
+
 ```bash
 # Should show endpoint + handshake
 docker exec amnezia-awg awg show awg0
@@ -128,6 +133,7 @@ sudo bash scripts/manage.sh backup
 
 ## Support
 
-- Issues: https://github.com/YOUR-USERNAME/amneziawg-docker-install/issues
-- AmneziaVPN Docs: https://docs.amnezia.org
-- Telegram: https://t.me/amnezia_vpn_en
+- Issues:
+  <https://github.com/YOUR-USERNAME/amneziawg-docker-install/issues>
+- AmneziaVPN Docs: <https://docs.amnezia.org>
+- Telegram: <https://t.me/amnezia_vpn_en>

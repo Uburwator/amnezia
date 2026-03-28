@@ -2,7 +2,8 @@
 
 ## Overview
 
-This installer creates a Docker-based AmneziaWG VPN server with the following design principles:
+This installer creates a Docker-based AmneziaWG VPN server with the
+following design principles:
 
 - **Stateless containers**: Configuration stored on host, not in container
 - **Hot reload**: Add/remove clients without restarting server
@@ -11,7 +12,7 @@ This installer creates a Docker-based AmneziaWG VPN server with the following de
 
 ## System Architecture
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │                         VPS Host                             │
 │                                                              │
@@ -42,7 +43,7 @@ This installer creates a Docker-based AmneziaWG VPN server with the following de
 │                                                              │
 │  Host Network:                                              │
 │  ├─ eth0: Public IP (e.g., 204.168.174.98)                 │
-│  ├─ Port mapping: 0.0.0.0:55555 → container:55555/udp      │
+│  ├─ Port mapping: 0.0.0.0:51821 → container:51821/udp      │
 │  └─ IP forwarding: Enabled (sysctl)                        │
 │                                                              │
 │  Filesystem:                                                │
@@ -53,7 +54,7 @@ This installer creates a Docker-based AmneziaWG VPN server with the following de
 │     └─ clients/ (client configs)                           │
 └─────────────────────────────────────────────────────────────┘
                           │
-                          │ VPN Tunnel (UDP 55555)
+                          │ VPN Tunnel (UDP 51821)
                           │ Obfuscated as HTTP/DNS
                           │
               ┌───────────┴───────────┐
@@ -77,17 +78,20 @@ This installer creates a Docker-based AmneziaWG VPN server with the following de
 ### Layer 2: Docker Networks
 
 **amnezia-dns-net** (`172.29.172.0/24`):
+
 - Purpose: Inter-container communication
 - Usage: Optional DNS container can be added
 - Bridge: `amn0` on host
 
 **docker0** (default, `172.17.0.0/16`):
+
 - Purpose: Default Docker networking
 - Container gets eth1 on this network
 
 ### Layer 3: VPN Tunnel
 
 **awg0** (`10.66.66.0/24`):
+
 - Purpose: VPN client-to-client network
 - Created by AmneziaWG inside container
 - Virtual interface (WireGuard tunnel)
@@ -96,16 +100,16 @@ This installer creates a Docker-based AmneziaWG VPN server with the following de
 
 ### Outbound (Client → Internet)
 
-```
+```text
 1. Client (10.66.66.2) sends packet to google.com
 
 2. Packet encrypted by AmneziaWG on client device
-   Outer: [Client Real IP] → [Server Public IP]:55555 (UDP)
+   Outer: [Client Real IP] → [Server Public IP]:51821 (UDP)
    Inner: [10.66.66.2] → [8.8.8.8] (encrypted)
 
-3. Packet arrives at VPS host:55555
+3. Packet arrives at VPS host:51821
 
-4. Docker forwards to container:55555
+4. Docker forwards to container:51821
 
 5. Container's awg0 receives packet
    - Decrypts: [10.66.66.2] → [8.8.8.8]
@@ -129,6 +133,7 @@ This installer creates a Docker-based AmneziaWG VPN server with the following de
 ### Host System
 
 **Responsibilities:**
+
 - Run Docker daemon
 - Expose VPN port (port mapping)
 - Enable IP forwarding (sysctl)
@@ -136,6 +141,7 @@ This installer creates a Docker-based AmneziaWG VPN server with the following de
 - (Optional) External firewall rules
 
 **Does NOT handle:**
+
 - VPN protocol processing (in container)
 - NAT for VPN clients (in container)
 - Encryption/decryption (in container)
@@ -143,6 +149,7 @@ This installer creates a Docker-based AmneziaWG VPN server with the following de
 ### Container
 
 **Responsibilities:**
+
 - Run AmneziaWG protocol (awg-go)
 - Create awg0 interface
 - Encrypt/decrypt packets
@@ -151,6 +158,7 @@ This installer creates a Docker-based AmneziaWG VPN server with the following de
 - Read config from mounted volume
 
 **Does NOT handle:**
+
 - Exposing ports to internet (host does this)
 - Storing configuration (on host volume)
 - External firewall (host/cloud provider)
@@ -159,7 +167,7 @@ This installer creates a Docker-based AmneziaWG VPN server with the following de
 
 All configuration lives on the **host** at `/opt/amnezia/awg/`:
 
-```
+```text
 /opt/amnezia/awg/
 ├── awg0.conf              # Server WireGuard config
 │                          # Updated when clients added
@@ -213,6 +221,7 @@ All configuration lives on the **host** at `/opt/amnezia/awg/`:
 ### Restart Behavior
 
 When container restarts:
+
 1. Reads awg0.conf from host (includes all previously added peers)
 2. Recreates awg0 interface with all peers
 3. All clients can reconnect automatically
@@ -228,16 +237,19 @@ When container restarts:
 ### Crypto Material
 
 **Server private key**:
+
 - Generated once during setup
 - Never leaves the server
 - If compromised: All clients must regenerate
 
 **Client private keys**:
+
 - Generated per-client
 - Stored in client configs
 - If one compromised: Only that client affected
 
 **Preshared key (PSK)**:
+
 - Shared by all clients
 - Adds post-quantum security
 - If compromised: Still need private keys to connect
@@ -245,11 +257,13 @@ When container restarts:
 ### Attack Surface
 
 **Exposed**:
+
 - UDP port (VPN endpoint)
 - Server public key (not secret)
 - VPN server IP address
 
 **Protected**:
+
 - Server private key (never transmitted)
 - Client private keys (only on client devices)
 - Preshared key (transmitted encrypted)
@@ -258,7 +272,7 @@ When container restarts:
 ## Comparison with Native Installation
 
 | Aspect | Docker (This Project) | Native (amneziawg-install) |
-|--------|----------------------|---------------------------|
+| ------ | --------------------- | -------------------------- |
 | **Isolation** | ✅ Strong (containerized) | ⚠️ Weaker (kernel module) |
 | **Updates** | ✅ Easy (pull new image) | ⚠️ Rebuild kernel module |
 | **Portability** | ✅ Works anywhere Docker runs | ⚠️ Kernel-dependent |
@@ -272,12 +286,14 @@ When container restarts:
 ### Why Docker?
 
 **Pros**:
+
 - Isolation from host system
 - Easy updates (pull new image)
 - Consistent environment across OSes
 - No kernel module compilation
 
 **Cons**:
+
 - Requires Docker daemon
 - Slightly higher resource usage
 - More complex networking
@@ -285,12 +301,14 @@ When container restarts:
 ### Why Host-Based Config?
 
 **Pros**:
+
 - Easy to backup (just tar /opt/amnezia/awg)
 - Easy to edit (any text editor)
 - Survives container recreation
 - Version control friendly
 
 **Cons**:
+
 - Config not portable with container
 - Must mount volume correctly
 
@@ -299,6 +317,7 @@ When container restarts:
 **Decision**: Put NAT/forwarding rules **inside container**, not on host
 
 **Rationale**:
+
 - Container networking is isolated
 - awg0 interface only exists inside container
 - Host iptables can't see container's interfaces
@@ -311,16 +330,19 @@ When container restarts:
 ### Why Two Docker Networks?
 
 The container connects to:
+
 1. **amnezia-dns-net**: For future DNS container
 2. **docker0** (default): For internet access
 
-This creates **two eth interfaces** in the container, which caused routing issues during development.
+This creates **two eth interfaces** in the container, which caused routing
+issues during development.
 
 **Solution**: NAT to BOTH eth0 and eth1 in start.sh
 
 ### Why awg0 Can't Route Directly
 
-The awg0 interface is virtual (exists only in container). Packets from awg0 need:
+The awg0 interface is virtual (exists only in container). Packets from awg0
+need:
 
 1. **FORWARD rules**: Allow awg0 → eth0/eth1
 2. **NAT rules**: Rewrite source IP from VPN subnet to container IP
@@ -340,6 +362,7 @@ Without ALL three layers, packets get dropped.
 ### Scalability
 
 Tested with:
+
 - ✅ 10 simultaneous clients
 - ✅ 100+ Mbps throughput
 - ✅ < 5ms added latency
@@ -360,6 +383,7 @@ Not tested at scale (100+ clients) but should handle it fine.
 **Impact**: All VPN clients disconnected
 
 **Recovery**: Auto-restart (--restart unless-stopped)
+
 - Container reads awg0.conf on startup
 - All peers restored automatically
 - Clients reconnect within 25 seconds (PersistentKeepalive)
@@ -369,6 +393,7 @@ Not tested at scale (100+ clients) but should handle it fine.
 **Impact**: Container stops
 
 **Recovery**: Docker auto-starts container on boot
+
 - Configuration persists on host
 - No manual intervention needed
 
@@ -377,6 +402,7 @@ Not tested at scale (100+ clients) but should handle it fine.
 **Impact**: Container won't start or clients can't connect
 
 **Recovery**: Restore from backup
+
 ```bash
 tar -xzf backup.tar.gz -C /opt/amnezia/awg/
 docker restart amnezia-awg
@@ -387,6 +413,7 @@ docker restart amnezia-awg
 **Impact**: Container can't reach internet
 
 **Recovery**: Recreate network
+
 ```bash
 docker network create --driver bridge --subnet=172.29.172.0/24 amnezia-dns-net
 docker restart amnezia-awg
@@ -396,7 +423,8 @@ docker restart amnezia-awg
 
 Possible improvements:
 
-1. **Multi-container setup**: Separate containers per protocol (AWG, OpenVPN, etc.)
+1. **Multi-container setup**: Separate containers per protocol
+   (AWG, OpenVPN, etc.)
 2. **Web UI**: Browser-based management interface
 3. **Monitoring**: Prometheus metrics export
 4. **Automated backups**: Cron job to backup configs
@@ -407,7 +435,8 @@ Possible improvements:
 
 ## Related Projects
 
-- **Official Amnezia Client**: https://github.com/amnezia-vpn/amnezia-client
-- **AmneziaWG Protocol**: https://github.com/amnezia-vpn/amneziawg-go
-- **Native Installer**: https://github.com/wiresock/amneziawg-install
-- **WireGuard**: https://www.wireguard.com/
+- **Official Amnezia Client**:
+  <https://github.com/amnezia-vpn/amnezia-client>
+- **AmneziaWG Protocol**: <https://github.com/amnezia-vpn/amneziawg-go>
+- **Native Installer**: <https://github.com/wiresock/amneziawg-install>
+- **WireGuard**: <https://www.wireguard.com/>
