@@ -75,6 +75,7 @@ amneziawg-docker-install/
 - ✅ Fresh install on Ubuntu 22.04
 - ✅ Works alongside native WireGuard
 - ✅ iOS client connection (AmneziaVPN 4.8.14)
+- ✅ Android client connection (AmneziaVPN)
 - ✅ Internet access through VPN
 - ✅ Hot reload (add client without restart)
 - ✅ File import (iOS/Android)
