@@ -8,7 +8,7 @@ server using Docker.
 ### Files Created
 
 ```text
-amneziawg-docker-install/
+amnezia/
 ├── README.md                          # Main documentation (English)
 ├── README.ru.md                       # Russian documentation
 ├── LICENSE                            # MIT License
@@ -149,8 +149,8 @@ Users can:
 
 ```bash
 # Review first (mandatory!)
-git clone https://github.com/YOUR-USERNAME/amneziawg-docker-install.git
-cd amneziawg-docker-install
+git clone https://github.com/Uburwator/amnezia.git
+cd amnezia
 less install.sh
 
 # Install

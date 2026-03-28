@@ -24,8 +24,8 @@ Before running ANY script from the internet:
 
 ```bash
 # Clone and inspect first
-git clone https://github.com/YOUR-USERNAME/amneziawg-docker-install.git
-cd amneziawg-docker-install
+git clone https://github.com/Uburwator/amnezia.git
+cd amnezia
 
 # Read and understand the scripts
 less install.sh
@@ -63,8 +63,8 @@ sudo bash install.sh
 
 ```bash
 # Clone the repository (DO NOT wget | bash!)
-git clone https://github.com/YOUR-USERNAME/amneziawg-docker-install.git
-cd amneziawg-docker-install
+git clone https://github.com/Uburwator/amnezia.git
+cd amnezia
 
 # Review the code first!
 less install.sh
@@ -95,15 +95,15 @@ into the [AmneziaVPN app](https://amnezia.org/downloads).
 ```bash
 wget -O - \
 https://raw.githubusercontent.com/YOUR-USERNAME/\
-amneziawg-docker-install/main/install.sh | sudo bash
+amnezia/main/install.sh | sudo bash
 ```
 
 ### Method 2: Manual Install
 
 ```bash
 # Clone repository
-git clone https://github.com/YOUR-USERNAME/amneziawg-docker-install.git
-cd amneziawg-docker-install
+git clone https://github.com/Uburwator/amnezia.git
+cd amnezia
 
 # Run setup
 sudo bash scripts/setup.sh
@@ -726,7 +726,7 @@ Contributions welcome! Please:
 ## Support
 
 - **Issues**:
-  <https://github.com/YOUR-USERNAME/amneziawg-docker-install/issues>
+  <https://github.com/Uburwator/amnezia/issues>
 - **AmneziaVPN Docs**: <https://docs.amnezia.org>
 - **Telegram**: <https://t.me/amnezia_vpn_en>
 

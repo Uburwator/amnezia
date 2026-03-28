@@ -1,6 +1,6 @@
 #!/bin/bash
 # AmneziaWG Docker Installer - Main Installation Script
-# https://github.com/YOUR-USERNAME/amneziawg-docker-install
+# https://github.com/Uburwator/amnezia
 
 set -e
 
@@ -33,8 +33,8 @@ echo "  5. ✓ Never pipe wget/curl output directly to bash"
 echo
 echo -e "${BOLD}Recommended approach:${NC}"
 echo "  # Clone and inspect the repository"
-echo "  git clone https://github.com/YOUR-USERNAME/amneziawg-docker-install"
-echo "  cd amneziawg-docker-install"
+echo "  git clone https://github.com/Uburwator/amnezia"
+echo "  cd amnezia"
 echo
 echo "  # Read the scripts"
 echo "  less install.sh"
@@ -60,7 +60,7 @@ echo "  • Create configuration files"
 echo "  • Run a privileged Docker container"
 echo "  • Modify network settings (IP forwarding)"
 echo
-echo -e "${YELLOW}Source code: https://github.com/YOUR-USERNAME/amneziawg-docker-install${NC}"
+echo -e "${YELLOW}Source code: https://github.com/Uburwator/amnezia${NC}"
 echo
 
 read -p "Have you reviewed the source code and understand the risks? (yes/NO): " -r
@@ -70,7 +70,7 @@ if [[ ! $REPLY =~ ^yes$ ]]; then
     echo "Installation cancelled."
     echo
     echo "Please review the source code first:"
-    echo "  https://github.com/YOUR-USERNAME/amneziawg-docker-install"
+    echo "  https://github.com/Uburwator/amnezia"
     exit 1
 fi
 
@@ -100,9 +100,9 @@ else
     TEMP_DIR=$(mktemp -d)
     trap "rm -rf $TEMP_DIR" EXIT
     
-    curl -fsSL https://raw.githubusercontent.com/YOUR-USERNAME/amneziawg-docker-install/main/scripts/setup.sh -o "$TEMP_DIR/setup.sh"
-    curl -fsSL https://raw.githubusercontent.com/YOUR-USERNAME/amneziawg-docker-install/main/scripts/add-client.sh -o "$TEMP_DIR/add-client.sh"
-    curl -fsSL https://raw.githubusercontent.com/YOUR-USERNAME/amneziawg-docker-install/main/scripts/manage.sh -o "$TEMP_DIR/manage.sh"
+    curl -fsSL https://raw.githubusercontent.com/YOUR-USERNAME/amnezia/main/scripts/setup.sh -o "$TEMP_DIR/setup.sh"
+    curl -fsSL https://raw.githubusercontent.com/YOUR-USERNAME/amnezia/main/scripts/add-client.sh -o "$TEMP_DIR/add-client.sh"
+    curl -fsSL https://raw.githubusercontent.com/YOUR-USERNAME/amnezia/main/scripts/manage.sh -o "$TEMP_DIR/manage.sh"
     
     chmod +x "$TEMP_DIR"/*.sh
     
@@ -175,5 +175,5 @@ echo "  3. Configure external firewall (if applicable):"
 echo "     • Allow UDP port $(grep 'AWG_PORT' /opt/amnezia/awg/awg0.conf 2>/dev/null | awk '{print $3}' || echo '51820') inbound"
 echo
 echo "For help and documentation:"
-echo "  https://github.com/YOUR-USERNAME/amneziawg-docker-install"
+echo "  https://github.com/Uburwator/amnezia"
 echo

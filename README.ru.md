@@ -20,8 +20,8 @@
 
 ```bash
 # Сначала клонируйте и изучите
-git clone https://github.com/YOUR-USERNAME/amneziawg-docker-install.git
-cd amneziawg-docker-install
+git clone https://github.com/Uburwator/amnezia.git
+cd amnezia
 
 # Прочитайте и поймите скрипты
 less install.sh
@@ -59,8 +59,8 @@ sudo bash install.sh
 
 ```bash
 # Клонируйте репозиторий (НЕ используйте wget | bash!)
-git clone https://github.com/YOUR-USERNAME/amneziawg-docker-install.git
-cd amneziawg-docker-install
+git clone https://github.com/Uburwator/amnezia.git
+cd amnezia
 
 # Сначала проверьте код!
 less install.sh
@@ -91,15 +91,15 @@ sudo amneziawg add-client laptop
 ```bash
 wget -O - \
 https://raw.githubusercontent.com/YOUR-USERNAME/\
-amneziawg-docker-install/main/install.sh | sudo bash
+amnezia/main/install.sh | sudo bash
 ```
 
 ### Метод 2: Ручная установка
 
 ```bash
 # Клонировать репозиторий
-git clone https://github.com/YOUR-USERNAME/amneziawg-docker-install.git
-cd amneziawg-docker-install
+git clone https://github.com/Uburwator/amnezia.git
+cd amnezia
 
 # Запустить установку
 sudo bash scripts/setup.sh
@@ -628,6 +628,6 @@ MIT License - См. файл LICENSE
 ## Поддержка
 
 - **Issues**:
-  <https://github.com/YOUR-USERNAME/amneziawg-docker-install/issues>
+  <https://github.com/Uburwator/amnezia/issues>
 - **Документация AmneziaVPN**: <https://docs.amnezia.org>
 - **Telegram**: <https://t.me/amnezia_vpn> (Русский)

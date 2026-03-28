@@ -12,8 +12,8 @@ See README.md for full warning.
 
 ```bash
 # 1. Clone and review
-git clone https://github.com/YOUR-USERNAME/amneziawg-docker-install.git
-cd amneziawg-docker-install
+git clone https://github.com/Uburwator/amnezia.git
+cd amnezia
 less install.sh scripts/setup.sh
 
 # 2. Install
@@ -61,7 +61,7 @@ docker restart amnezia-awg
 
 ## File Locations
 
-- **Scripts**: `~/amneziawg-docker-install/scripts/`
+- **Scripts**: `~/amnezia/scripts/`
 - **Server config**: `/opt/amnezia/awg/awg0.conf`
 - **Client configs**: `/opt/amnezia/awg/clients/*.conf`
 - **Keys**: `/opt/amnezia/awg/*.key`
@@ -134,6 +134,6 @@ sudo bash scripts/manage.sh backup
 ## Support
 
 - Issues:
-  <https://github.com/YOUR-USERNAME/amneziawg-docker-install/issues>
+  <https://github.com/Uburwator/amnezia/issues>
 - AmneziaVPN Docs: <https://docs.amnezia.org>
 - Telegram: <https://t.me/amnezia_vpn_en>
