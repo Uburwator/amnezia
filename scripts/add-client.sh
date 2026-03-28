@@ -1,7 +1,7 @@
 #!/bin/bash
 # AmneziaWG Add Client Script
 # Adds new VPN clients with hot reload (no container restart)
-# Generates working QR codes (Format 6 - iOS compatible, AWG v2)
+# Generates working QR codes (Format 12 - iOS/Android compatible)
 
 set -e
 
@@ -203,7 +203,7 @@ echo "    ✓ Client config created"
 
 echo "[5/5] Generating QR code..."
 
-# Generate QR code using Format 6 (iOS compatible) with AWG v2
+# Generate QR code using Format 12 (matches file import exactly)
 if command -v python3 &>/dev/null && command -v qrencode &>/dev/null; then
     python3 - "${AWG_CONFIG_DIR}/clients/${CLIENT_NAME}.conf" "${SERVER_ENDPOINT}" "${AWG_PORT}" "${CLIENT_PRIV_KEY}" "${CLIENT_IP}" "${SERVER_PUB_KEY}" "${PSK_KEY}" "${JC}" "${JMIN}" "${JMAX}" "${S1}" "${S2}" "${S3}" "${S4}" "${H1}" "${H2}" "${H3}" "${H4}" "${I1}" "${I2}" "${I3}" "${I4}" "${I5}" <<'PYTHON_SCRIPT'
 import sys
@@ -228,8 +228,9 @@ i1, i2, i3, i4, i5 = sys.argv[19], sys.argv[20], sys.argv[21], sys.argv[22], sys
 with open(config_file, 'r') as f:
     config_text = f.read()
 
-# Create FULL AWG v2 config JSON
-full_awg_config = {
+# Create lastConfig with UPPERCASE field names (as they appear in config file!)
+# This matches what extractWireGuardConfig() creates
+last_config = {
     "config": config_text,
     "hostName": server_ip,
     "port": int(server_port),
@@ -241,48 +242,51 @@ full_awg_config = {
     "persistent_keep_alive": "25",
     "allowed_ips": ["0.0.0.0/0", "::/0"],
     
-    # AWG obfuscation parameters
-    "junkPacketCount": jc,
-    "junkPacketMinSize": jmin,
-    "junkPacketMaxSize": jmax,
-    "initPacketJunkSize": s1,
-    "responsePacketJunkSize": s2,
-    "cookieReplyPacketJunkSize": s3,
-    "transportPacketJunkSize": s4,
-    "initPacketMagicHeader": h1,
-    "responsePacketMagicHeader": h2,
-    "underloadPacketMagicHeader": h3,
-    "transportPacketMagicHeader": h4,
-    
-    # Signature packets (I1-I5)
-    "specialJunk1": i1,
-    "specialJunk2": i2,
-    "specialJunk3": i3,
-    "specialJunk4": i4,
-    "specialJunk5": i5,
+    # UPPERCASE field names (as they appear in .conf file)
+    "Jc": jc,
+    "Jmin": jmin,
+    "Jmax": jmax,
+    "S1": s1,
+    "S2": s2,
+    "S3": s3,
+    "S4": s4,
+    "H1": h1,
+    "H2": h2,
+    "H3": h3,
+    "H4": h4,
+    "I1": i1,
+    "I2": i2,
+    "I3": i3,
+    "I4": i4,
+    "I5": i5,
 }
 
-# CRITICAL: Use "amnezia-awg2" for v2 container type!
+# Create AWG protocol config (matching extractWireGuardConfig output)
+awg_protocol_config = {
+    "last_config": json.dumps(last_config, separators=(',', ':')),
+    "isThirdPartyConfig": True,
+    "port": int(server_port),
+    "protocol_version": "2",  # Critical for v2 recognition!
+    "transport_proto": "udp"
+}
+
+# Use "amnezia-awg" (v1 container name) + protocol_version="2"
 server_config = {
     "containers": [{
-        "container": "amnezia-awg2",  # v2 not v1!
-        "awg": full_awg_config
+        "container": "amnezia-awg",  # v1 name, not awg2!
+        "awg": awg_protocol_config
     }],
-    "defaultContainer": "amnezia-awg2",  # v2 not v1!
+    "defaultContainer": "amnezia-awg",
     "description": "AmneziaWG",
     "dns1": "1.1.1.1",
     "dns2": "1.0.0.1",
     "hostName": server_ip
 }
 
-# Convert to JSON (compact)
+# Compress and encode (NO vpn:// prefix!)
 json_data = json.dumps(server_config, separators=(',', ':')).encode('utf-8')
-
-# Compress with Qt header (4-byte size + zlib)
 compressed = zlib.compress(json_data, 8)
 qt_compressed = len(json_data).to_bytes(4, 'big') + compressed
-
-# Base64 encode (URL-safe, no padding, NO vpn:// prefix!)
 b64_data = base64.urlsafe_b64encode(qt_compressed).decode('ascii').rstrip('=')
 
 # Display QR in terminal
@@ -294,7 +298,7 @@ try:
     qr_png = config_file.replace('.conf', '-qr.png')
     subprocess.run(['qrencode', '-t', 'PNG', '-o', qr_png, '-s', '8', b64_data], check=True)
     print(f"\n    ✓ QR code saved: {qr_png}")
-    print(f"      Format: AWG v2 (Format 6 - iOS compatible)")
+    print(f"      Format: AWG v2 (iOS/Android compatible)")
     print(f"      Size: {len(b64_data)} bytes")
     
 except Exception as e:
@@ -323,11 +327,11 @@ if [ -f "${AWG_CONFIG_DIR}/clients/${CLIENT_NAME}-qr.png" ]; then
 fi
 echo
 echo "Import to AmneziaVPN app:"
-echo "  Option 1 (QR Code - iOS/Android):"
+echo "  Option 1 (QR Code - Recommended):"
 echo "    • Scan the QR code above or open the PNG file"
 echo "    • AmneziaVPN app will import automatically"
 echo
-echo "  Option 2 (File Import - All platforms):"
+echo "  Option 2 (File Import):"
 echo "    1. Copy config to your device:"
 echo "       scp root@server:${AWG_CONFIG_DIR}/clients/${CLIENT_NAME}.conf ."
 echo "    2. AmneziaVPN app → Settings → Import from file"
