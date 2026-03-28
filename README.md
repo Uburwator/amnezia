@@ -3,6 +3,10 @@
 Easy-to-use installation scripts for setting up AmneziaWG VPN server
 using Docker with stateless containers and host-based configuration.
 
+✅ **Working QR codes** for iOS and Android (Format 12)  
+✅ **Tested on iOS 4.8.14 and Android**  
+✅ **Production-ready**
+
 ## ⚠️ SECURITY WARNING
 
 **NEVER blindly download and run bash scripts with root privileges!**
